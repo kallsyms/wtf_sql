@@ -9,34 +9,28 @@ STATUS_STRINGS = {
 def application(environ, start_response):
     conn = pymysql.connect('localhost', 'app_sql', 'app_sql', 'app_sql')
     with conn.cursor() as cursor:
-        cursor.execute("CREATE TEMPORARY TABLE IF NOT EXISTS query_params (k VARCHAR(255) PRIMARY KEY, v VARCHAR(4095))")
-        print("Params:")
-        for k, v in parse_qs(environ['QUERY_STRING']).items():
-            if type(v) is list:
-                v = v[0]
-            print(k,v)
-            cursor.execute("INSERT INTO query_params VALUES (%s, %s)", (k,v))
-        
         headers = {k[5:]: v for (k, v) in environ.items() if k.startswith('HTTP_')}
-        cursor.execute("CREATE TEMPORARY TABLE IF NOT EXISTS headers (k VARCHAR(255) PRIMARY KEY, v VARCHAR(4095))")
+        cursor.execute("CREATE TEMPORARY TABLE IF NOT EXISTS headers (name VARCHAR(255) PRIMARY KEY, value VARCHAR(4095))")
         print("Headers:")
         for k, v in headers.items():
             print(k,v)
             cursor.execute("INSERT INTO headers VALUES (%s, %s)", (k,v))
-        
+
+        app_args = [environ['PATH_INFO'], environ['QUERY_STRING'], None, None]
+        print(app_args)
         try:
-            cursor.callproc("app", [environ['PATH_INFO'], None, None])
+            cursor.callproc("app", app_args)
         except pymysql.Error as e:
             print(e)
             start_response('500 Internal Server Error', [('Content-Type', 'text/html')])
             return b"Somethin dun broke"
-        
-        cursor.execute("SELECT @_app_1, @_app_2")
+
+        cursor.execute("SELECT @_app_2, @_app_3")
         code, resp = cursor.fetchone()
         print(STATUS_STRINGS[code] + ": " + resp)
         headers = []
-        
+
         conn.commit()
-        
+
         start_response(STATUS_STRINGS[code], headers)
         return resp.encode('utf-8')
