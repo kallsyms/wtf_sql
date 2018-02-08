@@ -11,15 +11,15 @@ CREATE TABLE `responses` (
 
 DROP TABLE IF EXISTS `routes`;
 CREATE TABLE `routes` (
-    `regex` VARCHAR(255) PRIMARY KEY,
+    `match` VARCHAR(255) PRIMARY KEY,
     `proc` VARCHAR(255)
 );
 
 INSERT INTO `routes` VALUES
-    ('^/static/.*$', 'static_handler'),
-    ('^/$', 'index_handler'),
-    ('^/reflect$', 'reflect_handler'),
-    ('^/template_demo$', 'template_demo_handler');
+    ('/static/%', 'static_handler'),
+    ('/', 'index_handler'),
+    ('/reflect', 'reflect_handler'),
+    ('/template_demo', 'template_demo_handler');
 
 DROP TABLE IF EXISTS `static_assets`;
 CREATE TABLE `static_assets` (
@@ -168,8 +168,8 @@ BEGIN
         CALL parse_cookies(@cookie);
     END IF;
     
-    IF ( SELECT EXISTS (SELECT 1 FROM `routes` WHERE route REGEXP `regex`)) THEN
-        SET @stmt = CONCAT('CALL ', (SELECT `proc` FROM `routes` WHERE route REGEXP `regex` LIMIT 1), ' (?, ?, ?)');
+    IF ( SELECT EXISTS (SELECT 1 FROM `routes` WHERE route LIKE `match`)) THEN
+        SET @stmt = CONCAT('CALL ', (SELECT `proc` FROM `routes` WHERE route LIKE `match` LIMIT 1), ' (?, ?, ?)');
         PREPARE handler_call FROM @stmt;
         
         SET @route = route;
