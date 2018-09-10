@@ -1,4 +1,9 @@
-# "Your scientists were so preoccupied with whether or not they could, they didn’t stop to think if they should."
+-- "Your scientists were so preoccupied with whether or not they could, they didn’t stop to think if they should."
+
+/*
+Privs:
+    * INSERT routes (NO UPDATE, DELETE)
+*/
 
 DROP TABLE IF EXISTS `responses`;
 CREATE TABLE `responses` (
@@ -10,15 +15,15 @@ CREATE TABLE `responses` (
 
 DROP TABLE IF EXISTS `routes`;
 CREATE TABLE `routes` (
-    `match` VARCHAR(255) PRIMARY KEY,
-    `proc` VARCHAR(255)
+    `match` VARCHAR(128) PRIMARY KEY,
+    `proc` VARCHAR(128)
 );
 
 INSERT INTO `routes` VALUES
-    ('/static/%', 'static_handler'),
-    ('/', 'index_handler'),
-    ('/reflect', 'reflect_handler'),
-    ('/template_demo', 'template_demo_handler');
+    ('/static/%', 'CALL static_handler'),
+    ('/', 'CALL index_handler'),
+    ('/reflect', 'CALL reflect_handler'),
+    ('/template_demo', 'CALL template_demo_handler');
 
 DROP TABLE IF EXISTS `static_assets`;
 CREATE TABLE `static_assets` (
@@ -26,7 +31,7 @@ CREATE TABLE `static_assets` (
     `data` TEXT
 );
 
-INSERT INTO `static_assets` VALUES ('/static/foo', 'foo static file');
+INSERT INTO `static_assets` VALUES ('/static/foo', 'static foo file');
 
 DELIMITER $$
 
@@ -168,7 +173,7 @@ BEGIN
     END IF;
     
     IF ( SELECT EXISTS (SELECT 1 FROM `routes` WHERE route LIKE `match`)) THEN
-        SET @stmt = CONCAT('CALL ', (SELECT `proc` FROM `routes` WHERE route LIKE `match` LIMIT 1), ' (?, ?, ?)');
+        SET @stmt = (SELECT `proc` FROM `routes` WHERE route LIKE `match` LIMIT 1);
         PREPARE handler_call FROM @stmt;
         
         SET @route = route;
