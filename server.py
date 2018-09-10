@@ -11,13 +11,12 @@ def application(environ, start_response):
     with conn.cursor() as cursor:
         headers = {k[5:]: v for (k, v) in environ.items() if k.startswith('HTTP_')}
         cursor.execute("CREATE TEMPORARY TABLE IF NOT EXISTS headers (name VARCHAR(255) PRIMARY KEY, value VARCHAR(4095))")
-        print("Headers:")
+
         for k, v in headers.items():
-            print(k,v)
             cursor.execute("INSERT INTO headers VALUES (%s, %s)", (k,v))
 
         app_args = [environ['PATH_INFO'], environ['QUERY_STRING'], None, None]
-        print(app_args)
+
         try:
             cursor.callproc("app", app_args)
         except pymysql.Error as e:
@@ -27,7 +26,6 @@ def application(environ, start_response):
 
         cursor.execute("SELECT @_app_2, @_app_3")
         code, resp = cursor.fetchone()
-        print(STATUS_STRINGS[code] + ": " + resp)
         headers = []
 
         conn.commit()
