@@ -1,13 +1,5 @@
 import pymysql
 
-STATUS_STRINGS = {
-    200: "200 OK",
-    302: "302 Found",
-    401: "401 Not Authorized",
-    404: "404 Not Found",
-}
-
-
 def application(environ, start_response):
     conn = pymysql.connect("localhost", "app_sql", "app_sql", "app_sql")
     with conn.cursor() as cursor:
@@ -40,11 +32,11 @@ def application(environ, start_response):
             return b"Somethin dun broke"
 
         cursor.execute("SELECT @_app_3, @_app_4")
-        code, resp = cursor.fetchone()
+        status, resp = cursor.fetchone()
         cursor.execute("SELECT `name`, `value` FROM `resp_headers`")
         headers = list(cursor.fetchall())
 
         conn.commit()
 
-        start_response(STATUS_STRINGS[code], headers)
+        start_response(status, headers)
         return resp.encode("utf-8")

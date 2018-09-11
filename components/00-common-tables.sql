@@ -37,3 +37,15 @@ CREATE TABLE `config` (
     `name` VARCHAR(255) PRIMARY KEY,
     `value` TEXT
 );
+
+DROP TABLE IF EXISTS `status_strings`;
+CREATE TABLE `status_strings` (
+    `code` INT PRIMARY KEY,
+    `message` VARCHAR(255)
+);
+
+INSERT INTO `status_strings` VALUES
+    (200, '200 OK'),
+    (302, '302 Found'),
+    (401, '401 Not Authorized'),
+    (404, '404 Not Found');
