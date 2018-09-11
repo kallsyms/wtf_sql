@@ -28,5 +28,5 @@ CREATE TABLE `static_assets` (
 DROP TABLE IF EXISTS `config`;
 CREATE TABLE `config` (
     `name` VARCHAR(255) PRIMARY KEY,
-    `val` VARCHAR(255)
+    `value` VARCHAR(255)
 );
