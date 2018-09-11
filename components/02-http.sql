@@ -67,6 +67,16 @@ BEGIN
 END$$
 
 
+DROP PROCEDURE IF EXISTS `get_cookie`$$
+CREATE PROCEDURE `get_cookie` (IN `i_name` TEXT, OUT `o_value` TEXT)
+BEGIN
+    IF ( SELECT EXISTS (SELECT 1 FROM `cookies` WHERE `name` = `i_name`)) THEN
+        SET `o_value` = (SELECT `value` FROM `cookies` WHERE `name` = `i_name` LIMIT 1);
+    ELSE
+        SET `o_value` = NULL;
+    END IF;
+END$$
+
 DROP PROCEDURE IF EXISTS `redirect`$$
 CREATE PROCEDURE `redirect` (IN `i_location` TEXT, OUT `o_status` INT)
 BEGIN

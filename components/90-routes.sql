@@ -25,10 +25,33 @@ END$$
 DROP PROCEDURE IF EXISTS `index_handler`$$
 CREATE PROCEDURE `index_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
-    SET status = 200;
-    SET resp = 'Hello world!';
+    DECLARE logged_in BOOLEAN;
+
+    CALL is_logged_in(logged_in);
+    if logged_in THEN
+        CALL logged_in_index_handler(status, resp);
+    ELSE
+        CALL logged_out_index_handler(status, resp);
+    END IF;
 END$$
 
+
+DROP PROCEDURE IF EXISTS `logged_in_index_handler`$$
+CREATE PROCEDURE `logged_in_index_handler` (OUT `status` INT, OUT `resp` TEXT)
+BEGIN
+    SET status = 200;
+    CALL template('/templates/index_logged_in.html', resp);
+END$$
+
+
+DROP PROCEDURE IF EXISTS `logged_out_index_handler`$$
+CREATE PROCEDURE `logged_out_index_handler` (OUT `status` INT, OUT `resp` TEXT)
+BEGIN
+    SET status = 200;
+    SET resp = 'Hello world (logged_out)!';
+END$$
+
+    
 DROP PROCEDURE IF EXISTS `reflect_handler`$$
 CREATE PROCEDURE `reflect_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
