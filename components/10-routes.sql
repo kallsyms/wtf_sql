@@ -52,9 +52,7 @@ BEGIN
 
     SET status = 200;
 
-    SET @example_template_string = '<html><head><title>asdf</title></head><body>Hello ${request_name}</body></html>';
-
-    CALL template_string(@example_template_string, resp);
+    CALL template('/templates/asdf.html', resp);
 END$$
 
 
