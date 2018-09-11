@@ -6,7 +6,7 @@ COMPONENTS = $(shell find components -type f -name \*.sql | sort -)
 all: $(GENERATED) app.sql
 
 app.sql: $(COMPONENTS)
-	cat $(COMPONENTS) > $@
+	cat $(shell find components -type f -name \*.sql | sort -) > $@
 
 components/01-static.sql: ${STATICS}
 	python3 generate_static.py > $@
