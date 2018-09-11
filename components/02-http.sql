@@ -44,6 +44,13 @@ BEGIN
 END$$
 
 
+DROP PROCEDURE IF EXISTS `get_param`$$
+CREATE PROCEDURE `get_param` (IN `i_name` TEXT, OUT `o_value` TEXT)
+BEGIN
+    SET o_value = (SELECT `value` FROM `query_params` WHERE `name` = i_name LIMIT 1);
+END$$
+
+
 DROP PROCEDURE IF EXISTS `set_header`$$
 CREATE PROCEDURE `set_header` (IN `name` VARCHAR(255), IN `value` VARCHAR(4095))
 BEGIN
@@ -56,5 +63,15 @@ CREATE PROCEDURE `set_cookie` (IN `name` VARCHAR(255), IN `value` VARCHAR(4095))
 BEGIN
     INSERT INTO `resp_cookies` VALUES (`name`, `value`) ON DUPLICATE KEY UPDATE `value` = `value`;
 END$$
+
+
+DROP PROCEDURE IF EXISTS `redirect`$$
+CREATE PROCEDURE `redirect` (IN `i_location` TEXT, OUT `o_status` INT)
+BEGIN
+    SET o_status = 302;
+    CALL set_header('Location', i_location);
+END$$
+
+
 
 DELIMITER ;

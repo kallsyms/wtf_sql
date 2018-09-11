@@ -10,6 +10,13 @@ BEGIN
     INSERT INTO `template_vars` SELECT CONCAT('request_', name), value FROM `query_params`;
 END$$
 
+DROP PROCEDURE IF EXISTS `set_template_var`$$
+CREATE PROCEDURE `set_template_var` (IN `i_key` TEXT, IN `i_value` TEXT)
+BEGIN
+    CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
+    INSERT INTO `template_vars` VALUES (`i_key`, `i_value`);
+END$$
+
 
 DROP PROCEDURE IF EXISTS `template_string`$$
 CREATE PROCEDURE `template_string` (IN `template_s` TEXT, OUT `resp` TEXT)

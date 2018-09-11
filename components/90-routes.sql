@@ -5,6 +5,7 @@ INSERT INTO `routes` VALUES
     ('/', 'CALL index_handler(?, ?, ?)'),
     ('/reflect', 'CALL reflect_handler(?, ?, ?)'),
     ('/template_demo', 'CALL template_demo_handler(?, ?, ?)'),
+    ('/login', 'CALL login_handler(?, ?, ?)'),
     ('/list_users', 'CALL list_users_handler(?, ?, ?)');
 
 DELIMITER $$
@@ -56,6 +57,30 @@ BEGIN
 
     CALL template('/templates/asdf.html', resp);
 END$$
+
+
+DROP PROCEDURE IF EXISTS `login_handler`$$
+CREATE PROCEDURE `login_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
+BEGIN
+    DECLARE name, email, password TEXT;
+    DECLARE auth BOOLEAN;
+
+    
+    CALL get_param('email', email);
+    CALL get_param('password', password);
+
+    CALL check_password(email, password, auth);
+    IF auth THEN
+        SET resp = CONCAT(email, ', ', password);
+        CALL redirect('/', status);
+    ELSE
+        SET status = 401;
+        
+        CALL set_template_var('error_msg', 'Email or password is incorrect.');
+        CALL template('/templates/404.html', resp);
+    END IF;
+END$$
+
 
 DROP PROCEDURE IF EXISTS `list_users_handler`$$
 CREATE PROCEDURE `list_users_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)

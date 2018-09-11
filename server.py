@@ -1,18 +1,28 @@
 import pymysql
 
-STATUS_STRINGS = {200: "200 OK", 404: "404 Not Found"}
+STATUS_STRINGS = {
+    200: "200 OK",
+    302: "302 Found",
+    401: "401 Not Authorized",
+    404: "404 Not Found",
+}
 
 
 def application(environ, start_response):
     conn = pymysql.connect("localhost", "app_sql", "app_sql", "app_sql")
     with conn.cursor() as cursor:
-        headers = {k[5:]: v for (k, v) in environ.items() if k.startswith('HTTP_')}
-        cursor.execute("CREATE TEMPORARY TABLE IF NOT EXISTS `headers` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095))")
+        headers = {k[5:]: v for (k, v) in environ.items() if k.startswith("HTTP_")}
+        cursor.execute(
+            "CREATE TEMPORARY TABLE IF NOT EXISTS `headers` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095))"
+        )
 
         for k, v in headers.items():
-            cursor.execute("INSERT INTO `headers` VALUES (%s, %s) ON DUPLICATE KEY UPDATE `value` = %s", (k,v,v))
+            cursor.execute(
+                "INSERT INTO `headers` VALUES (%s, %s) ON DUPLICATE KEY UPDATE `value` = %s",
+                (k, v, v),
+            )
 
-        app_args = [environ['PATH_INFO'], environ['QUERY_STRING'], None, None]
+        app_args = [environ["PATH_INFO"], environ["QUERY_STRING"], None, None]
 
         try:
             cursor.callproc("app", app_args)
