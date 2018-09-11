@@ -25,6 +25,12 @@ CREATE TABLE `static_assets` (
     `data` TEXT
 );
 
+DROP TABLE IF EXISTS `templates`;
+CREATE TABLE `templates` (
+    `path` VARCHAR(255) PRIMARY KEY,
+    `data` TEXT
+);
+
 DROP TABLE IF EXISTS `config`;
 CREATE TABLE `config` (
     `name` VARCHAR(255) PRIMARY KEY,
