@@ -10,8 +10,8 @@ BEGIN
     INSERT INTO `template_vars` SELECT CONCAT('request_', name), value FROM `query_params`;
 END$$
 
-DROP PROCEDURE IF EXISTS `template`$$
-CREATE PROCEDURE `template` (IN `template_string` TEXT, OUT `resp` TEXT)
+DROP PROCEDURE IF EXISTS `template_string`$$
+CREATE PROCEDURE `template_string` (IN `template_string` TEXT, OUT `resp` TEXT)
 BEGIN
     DECLARE formatted TEXT;
     DECLARE done BOOLEAN;
