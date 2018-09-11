@@ -16,7 +16,7 @@ CREATE TABLE `responses` (
 
 DROP TABLE IF EXISTS `routes`;
 CREATE TABLE `routes` (
-    `match` VARCHAR(128) PRIMARY KEY,
+    `match` VARCHAR(255) PRIMARY KEY,
     `proc` VARCHAR(128)
 );
 
@@ -35,5 +35,5 @@ CREATE TABLE `templates` (
 DROP TABLE IF EXISTS `config`;
 CREATE TABLE `config` (
     `name` VARCHAR(255) PRIMARY KEY,
-    `value` VARCHAR(255)
+    `value` TEXT
 );

@@ -92,26 +92,27 @@ BEGIN
 
     CALL dump_users(users_table);
 
-    CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
+    CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
     INSERT INTO `template_vars` VALUES ('users_table', users_table);
     CALL template('/templates/users.html', resp);
 END$$
 
 DROP PROCEDURE IF EXISTS `app`$$
-CREATE PROCEDURE `app` (IN `route` VARCHAR(255), IN `params` VARCHAR(4095), OUT `status` INT, OUT `resp` TEXT)
+CREATE PROCEDURE `app` (IN `route` VARCHAR(255), IN `params` TEXT, IN `post_data` TEXT, OUT `status` INT, OUT `resp` TEXT)
 BEGIN
-    DECLARE set_cookies VARCHAR(4095);
+    DECLARE req_cookies, resp_cookies TEXT;
 
-    CREATE TEMPORARY TABLE `resp_headers` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
-    CREATE TEMPORARY TABLE `resp_cookies` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
+    CREATE TEMPORARY TABLE `resp_headers` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
+    CREATE TEMPORARY TABLE `resp_cookies` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
 
-    CREATE TEMPORARY TABLE `query_params` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
+    CREATE TEMPORARY TABLE `query_params` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
     CALL parse_params(params);
+    CALL parse_params(post_data);
 
-    CREATE TEMPORARY TABLE `cookies` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
+    CREATE TEMPORARY TABLE `cookies` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
     IF ( SELECT EXISTS (SELECT 1 FROM `headers` WHERE `name` = 'COOKIE')) THEN
-        SELECT `value` INTO @cookie FROM `headers` WHERE `name` = 'COOKIE';
-        CALL parse_cookies(@cookie);
+        SET req_cookies = (SELECT `value` FROM `headers` WHERE `name` = 'COOKIE');
+        CALL parse_cookies(req_cookies);
     END IF;
     
     IF ( SELECT EXISTS (SELECT 1 FROM `routes` WHERE route LIKE `match`)) THEN
@@ -128,9 +129,9 @@ BEGIN
         SET resp = 'Route not found.';
     END IF;
     
-    SET set_cookies = (SELECT GROUP_CONCAT((CONCAT(`name`, '=', `value`)) SEPARATOR '; ') FROM `resp_cookies`);
-    IF NOT ISNULL(set_cookies) THEN
-        INSERT INTO `resp_headers` VALUES ('Set-Cookie', set_cookies) ON DUPLICATE KEY UPDATE `value` = set_cookies;
+    SET resp_cookies = (SELECT GROUP_CONCAT((CONCAT(`name`, '=', `value`)) SEPARATOR '; ') FROM `resp_cookies`);
+    IF NOT ISNULL(resp_cookies) THEN
+        INSERT INTO `resp_headers` VALUES ('Set-Cookie', resp_cookies) ON DUPLICATE KEY UPDATE `value` = resp_cookies;
     END IF;
 
     INSERT INTO `responses` (route, code) VALUES (route, status);

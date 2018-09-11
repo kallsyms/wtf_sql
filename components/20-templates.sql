@@ -13,7 +13,7 @@ END$$
 DROP PROCEDURE IF EXISTS `set_template_var`$$
 CREATE PROCEDURE `set_template_var` (IN `i_key` TEXT, IN `i_value` TEXT)
 BEGIN
-    CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
+    CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
     INSERT INTO `template_vars` VALUES (`i_key`, `i_value`);
 END$$
 
@@ -27,7 +27,7 @@ BEGIN
 
     SET @template_regex = '\\$\\{[a-zA-Z0-9_ ]+\\}';
 
-    CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
+    CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
     CALL populate_common_template_vars();
 
     SET formatted = template_s;

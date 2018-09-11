@@ -13,6 +13,18 @@ Solve:
 n-1. insert route with arb `SELECT ...`
 n. leak everything, flag in another table, db, global, etc.
 
+Bug ideas:
+    * template injection -> leak config
+    * "pass-the-signature" -> get the server to sign an arbitrary value in another cookie, substitute with the `is_admin` cookie since name is not part of the signature
+
+Formatting notes:
+    * Types
+        * Routes should be VARCHAR(255)
+        * header, cookie, template, etc. keys should be VARCHAR(255)
+        * header, cookie, template, etc. values should be TEXT
+        * response is TEXT
+    * Naming
+        * k/v pairs are always `name` `value` (to add to the confusion)
 
 TODO:
 - remove config
