@@ -12,3 +12,8 @@ Solve:
 ...
 n-1. insert route with arb `SELECT ...`
 n. leak everything, flag in another table, db, global, etc.
+
+
+TODO:
+- remove config
+- X-SQL-Facts
