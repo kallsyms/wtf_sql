@@ -6,6 +6,7 @@ INSERT INTO `routes` VALUES
     ('/reflect', 'CALL reflect_handler(?, ?, ?)'),
     ('/template_demo', 'CALL template_demo_handler(?, ?, ?)'),
     ('/login', 'CALL login_handler(?, ?, ?)'),
+    ('/register', 'CALL register_handler(?, ?, ?)'),
     ('/list_users', 'CALL list_users_handler(?, ?, ?)');
 
 DELIMITER $$
@@ -79,6 +80,37 @@ BEGIN
         
         CALL set_template_var('error_msg', 'Email or password is incorrect.');
         CALL template('/templates/404.html', resp);
+    END IF;
+END$$
+
+
+DROP PROCEDURE IF EXISTS `register_handler`$$
+CREATE PROCEDURE `register_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
+BEGIN
+    DECLARE name, email, password TEXT;
+    DECLARE already_exists BOOLEAN;
+
+    SET `name` = NULL;
+    SET `email` = NULL;
+    SET `password` = NULL;
+
+    CALL get_param('name', `name`);
+    CALL get_param('email', `email`);
+    CALL get_param('password', `password`);
+
+    CALL user_exists(email, already_exists);
+    IF ISNULL(`name`) OR ISNULL(`email`) OR ISNULL(`password`) THEN
+        SET status = 200;
+        CALL set_template_var('error_msg', '');
+        CALL template('/templates/register.html', resp);
+    ELSEIF already_exists THEN
+        SET status = 200;
+        CALL set_template_var('error_msg', 'User already exists. <a href=/register>Go Back</a>');
+        CALL template('/templates/register.html', resp);
+    ELSE
+        SET resp = 'Registered!!!!';
+        CALL create_user(`email`, `name`, `password`);
+        CALL redirect('/', status);
     END IF;
 END$$
 

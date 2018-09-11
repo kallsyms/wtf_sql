@@ -1,4 +1,6 @@
+DROP TABLE IF EXISTS `posts`;
 DROP TABLE IF EXISTS `users`;
+
 CREATE TABLE `users` (
     `id` INT PRIMARY KEY AUTO_INCREMENT,
     `email` VARCHAR(255) UNIQUE,
@@ -6,7 +8,6 @@ CREATE TABLE `users` (
     `pass_hash` VARCHAR(255)
 );
 
-DROP TABLE IF EXISTS `posts`;
 CREATE TABLE `posts` (
     `id` INT PRIMARY KEY AUTO_INCREMENT,
     `user_id` INT NOT NULL,
