@@ -1,3 +1,5 @@
+-- Routes
+
 INSERT INTO `routes` VALUES
     ('/static/%', 'CALL static_handler(?, ?, ?)'),
     ('/', 'CALL index_handler(?, ?, ?)'),
@@ -43,36 +45,6 @@ BEGIN
 END$$
 
 
-DROP PROCEDURE IF EXISTS `template`$$
-CREATE PROCEDURE `template` (IN `template_string` TEXT, OUT `resp` TEXT)
-BEGIN
-    DECLARE formatted TEXT;
-    DECLARE done BOOLEAN;
-    DECLARE fmt_name, fmt_val TEXT;
-    DECLARE kwarg_cur CURSOR FOR SELECT `name`, `value` FROM `template_vars`;
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-
-    SET formatted = template_string;
-
-    OPEN kwarg_cur;
-
-    fmt_loop: LOOP
-        FETCH kwarg_cur INTO fmt_name, fmt_val;
-
-        SET formatted = REPLACE(formatted, CONCAT('${', fmt_name, '}'), fmt_val);
-
-        IF done THEN
-            CLOSE kwarg_cur;
-            LEAVE fmt_loop;
-        END IF;
-    END LOOP fmt_loop;
-
-    SET resp = formatted;
-
-    DROP TEMPORARY TABLE `template_vars`;
-END$$
-
-
 DROP PROCEDURE IF EXISTS `template_demo_handler`$$
 CREATE PROCEDURE `template_demo_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
@@ -80,56 +52,11 @@ BEGIN
 
     SET status = 200;
 
-    SET template_string = '<html><head><title>asdf</title></head><body>Hello ${name}</body></html>';
-
-    CREATE TEMPORARY TABLE `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
-    INSERT INTO `template_vars` VALUES
-        ('name', 'Nick');
+    SET template_string = '<html><head><title>asdf</title></head><body>Hello ${request_name}</body></html>';
 
     CALL template(template_string, resp);
 END$$
 
-
-DROP PROCEDURE IF EXISTS `parse_cookies`$$
-CREATE PROCEDURE `parse_cookies` (IN `cookies` VARCHAR(4095))
-BEGIN
-    -- Parse cookies in the form a=b; b=c; c=d;
-    DECLARE cur_cookies, cookie, cookie_name, cookie_value VARCHAR(4095);
-    SET cur_cookies = cookies;
-
-    WHILE ( INSTR(cur_cookies, '=') > 0 ) DO
-        SET cookie = SUBSTRING_INDEX(cur_cookies, ';', 1);
-        
-        SET cookie_name = TRIM(SUBSTRING(cookie FROM 1 FOR INSTR(cookie, '=') - 1));
-        SET cookie_value = TRIM(SUBSTRING(cookie FROM INSTR(cookie, '=') + 1));
-        
-        INSERT INTO `cookies` VALUES (cookie_name, cookie_value) ON DUPLICATE KEY UPDATE `value`=cookie_value;
-
-        -- + 2 because the mysql is 1-indexed and because this needs to pass the ';'
-        -- Also TRIM to remove the optional space after the semicolon
-        SET cur_cookies = TRIM(SUBSTRING(cur_cookies FROM LENGTH(cookie) + 2));
-    END WHILE;
-END$$
-
-
-DROP PROCEDURE IF EXISTS `parse_params`$$
-CREATE PROCEDURE `parse_params` (IN `params` VARCHAR(4095))
-BEGIN
-    -- Parse URL params of the form a=b&b=c&c=d
-    DECLARE cur_params, param, param_name, param_value VARCHAR(4095);
-    SET cur_params = params;
-
-    WHILE ( INSTR(cur_params, '=') > 0 ) DO 
-        SET param = SUBSTRING_INDEX(cur_params, '&', 1);
-
-        SET param_name = TRIM(SUBSTRING(param FROM 1 FOR INSTR(param, '=') - 1));
-        SET param_value = TRIM(SUBSTRING(param FROM INSTR(param, '=') + 1));
-
-        INSERT INTO `query_params` VALUES (param_name, param_value) ON DUPLICATE KEY UPDATE `value`=param_value;
-
-        SET cur_params = SUBSTRING(cur_params FROM LENGTH(param) + 2);
-    END WHILE;
-END$$
 
 DROP PROCEDURE IF EXISTS `app`$$
 CREATE PROCEDURE `app` (IN `route` VARCHAR(255), IN `params` VARCHAR(4095), OUT `status` INT, OUT `resp` TEXT)

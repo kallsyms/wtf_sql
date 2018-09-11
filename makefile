@@ -1,5 +1,5 @@
 STATICS = $(shell find static -type f | xargs echo)
-COMPONENTS = components/00-base.sql components/01-static.sql components/02-routes.sql
+COMPONENTS = $(shell find components -type f -name \*.sql | xargs echo)
 
 app.sql: $(COMPONENTS)
 	cat $(COMPONENTS) > $@
