@@ -37,8 +37,6 @@ BEGIN
 
     SET cur_cookies = cookies;
 
-    INSERT INTO `cookies` VALUES ('1', '1');
-
     WHILE ( INSTR(cur_cookies, '=') > 0 ) DO
         SET cookie = SUBSTRING_INDEX(cur_cookies, ';', 1);
         
@@ -55,8 +53,6 @@ BEGIN
         -- Also TRIM to remove the optional space after the semicolon
         SET cur_cookies = TRIM(SUBSTRING(cur_cookies FROM LENGTH(cookie) + 2));
     END WHILE;
-
-    INSERT INTO `cookies` VALUES ('3', '3');
 END$$
 
 
