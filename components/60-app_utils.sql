@@ -9,12 +9,33 @@ BEGIN
     INSERT INTO `users` (`email`, `name`, `pass_hash`) VALUES (email, name, hashed);
 END$$
 
-DROP PROCEDURE iF EXISTS `check_password`$$
+DROP PROCEDURE IF EXISTS `check_password`$$
 CREATE PROCEDURE `check_password` (IN email TEXT, IN password TEXT, OUT correct BOOLEAN)
 BEGIN
     DECLARE hashed TEXT;
     SET hashed = (SELECT SHA2(password, 256));
-    SET correct = (SELECT EXiSTS (SELECT 1 FROM `users` WHERE `email` = email AND `pass_hash` = hashed));
+    SET correct = (SELECT EXISTS (SELECT 1 FROM `users` WHERE `email` = email AND `pass_hash` = hashed));
+END$$
+
+DROP PROCEDURE IF EXISTS `user_exists`$$
+CREATE PROCEDURE `user_exists` (IN `i_email` TEXT, OUT `o_exists` BOOLEAN)
+BEGIN
+    SET o_exists = (SELECT EXISTS (SELECT 1 FROM `users` WHERE `email` = i_email));
+END$$
+
+DROP PROCEDURE IF EXISTS `is_logged_in`$$
+CREATE PROCEDURE `is_logged_in` (OUT `o_logged_in` BOOLEAN)
+BEGIN
+    DECLARE `u_email` TEXT;
+
+    SET `u_email` = NULL;
+    CALL get_cookie('email', `u_email`);
+
+    IF ISNULL(`u_email`) THEN
+        SET o_logged_in = FALSE;
+    ELSE
+        SET o_logged_in = (SELECT EXISTS (SELECT 1 FROM `users` WHERE `email` = `u_email`));
+    END IF;
 END$$
 
 DROP PROCEDURE IF EXISTS `dump_users`$$
