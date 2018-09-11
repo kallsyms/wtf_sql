@@ -1,4 +1,4 @@
-DELIMETER $$
+DELIMITER $$
 
 DROP PROCEDURE IF EXISTS `app`$$
 CREATE PROCEDURE `app` (IN `route` VARCHAR(255), IN `params` TEXT, IN `post_data` TEXT, OUT `status` TEXT, OUT `resp` TEXT)
@@ -43,4 +43,4 @@ BEGIN
     INSERT INTO `responses` (route, code) VALUES (route, status_code);
 END$$
 
-DELIMETER ;
+DELIMITER ;
