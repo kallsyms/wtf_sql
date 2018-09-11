@@ -72,6 +72,7 @@ BEGIN
     CALL check_password(email, password, auth);
     IF auth THEN
         SET resp = CONCAT(email, ', ', password);
+        CALL set_cookie('email', email);
         CALL redirect('/', status);
     ELSE
         SET status = 401;
