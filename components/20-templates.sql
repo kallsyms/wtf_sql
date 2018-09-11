@@ -10,32 +10,29 @@ BEGIN
     INSERT INTO `template_vars` SELECT CONCAT('request_', name), value FROM `query_params`;
 END$$
 
+
 DROP PROCEDURE IF EXISTS `template_string`$$
-CREATE PROCEDURE `template_string` (IN `template_string` TEXT, OUT `resp` TEXT)
+CREATE PROCEDURE `template_string` (IN `template_s` TEXT, OUT `resp` TEXT)
 BEGIN
     DECLARE formatted TEXT;
-    DECLARE done BOOLEAN;
     DECLARE fmt_name, fmt_val TEXT;
-    DECLARE kwarg_cur CURSOR FOR SELECT `name`, `value` FROM `template_vars`;
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    DECLARE replace_start, replace_end INT;
+
+    SET @template_regex = '\\$\\{[a-zA-Z0-9_ ]+\\}';
 
     CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
     CALL populate_common_template_vars();
 
-    SET formatted = template_string;
+    SET formatted = template_s;
 
-    OPEN kwarg_cur;
-
-    fmt_loop: LOOP
-        FETCH kwarg_cur INTO fmt_name, fmt_val;
-
-        SET formatted = REPLACE(formatted, CONCAT('${', fmt_name, '}'), fmt_val);
-
-        IF done THEN
-            CLOSE kwarg_cur;
-            LEAVE fmt_loop;
-        END IF;
-    END LOOP fmt_loop;
+    WHILE ( formatted REGEXP @template_regex ) DO
+        SET replace_start = REGEXP_INSTR(formatted, @template_regex, 1, 1, 0);
+        SET replace_end = REGEXP_INSTR(formatted, @template_regex, 1, 1, 1);
+        SET fmt_name = SUBSTR(formatted FROM replace_start + 2 FOR (replace_end - replace_start - 2 - 1));
+        SELECT `value` INTO fmt_val FROM `template_vars` WHERE `name` = TRIM(fmt_name);
+        SET fmt_val = IFNULL(fmt_val, '');
+        SET formatted = CONCAT(SUBSTR(formatted FROM 1 FOR replace_start - 1), fmt_val, SUBSTR(formatted FROM replace_end));
+    END WHILE;
 
     SET resp = formatted;
 

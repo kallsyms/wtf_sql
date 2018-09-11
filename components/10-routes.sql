@@ -48,8 +48,6 @@ END$$
 DROP PROCEDURE IF EXISTS `template_demo_handler`$$
 CREATE PROCEDURE `template_demo_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
-    DECLARE template_string TEXT;
-
     SET status = 200;
 
     CALL template('/templates/asdf.html', resp);
