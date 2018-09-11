@@ -4,7 +4,8 @@ INSERT INTO `routes` VALUES
     ('/static/%', 'CALL static_handler(?, ?, ?)'),
     ('/', 'CALL index_handler(?, ?, ?)'),
     ('/reflect', 'CALL reflect_handler(?, ?, ?)'),
-    ('/template_demo', 'CALL template_demo_handler(?, ?, ?)');
+    ('/template_demo', 'CALL template_demo_handler(?, ?, ?)'),
+    ('/list_users', 'CALL list_users_handler(?, ?, ?)');
 
 DELIMITER $$
 
@@ -56,6 +57,19 @@ BEGIN
     CALL template('/templates/asdf.html', resp);
 END$$
 
+DROP PROCEDURE IF EXISTS `list_users_handler`$$
+CREATE PROCEDURE `list_users_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
+BEGIN
+    DECLARE users_table TEXT;
+
+    SET status = 200;
+
+    CALL dump_users(users_table);
+
+    CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
+    INSERT INTO `template_vars` VALUES ('users_table', users_table);
+    CALL template('/templates/users.html', resp);
+END$$
 
 DROP PROCEDURE IF EXISTS `app`$$
 CREATE PROCEDURE `app` (IN `route` VARCHAR(255), IN `params` VARCHAR(4095), OUT `status` INT, OUT `resp` TEXT)
