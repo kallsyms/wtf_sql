@@ -1,37 +1,8 @@
--- "Your scientists were so preoccupied with whether or not they could, they didn’t stop to think if they should."
-
-/*
-Privs:
-    * INSERT routes (NO UPDATE, DELETE)
-*/
-
-DROP TABLE IF EXISTS `responses`;
-CREATE TABLE `responses` (
-    `id` INT PRIMARY KEY AUTO_INCREMENT,
-    `ts` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `route` VARCHAR(255),
-    `code` INT NOT NULL
-);
-
-DROP TABLE IF EXISTS `routes`;
-CREATE TABLE `routes` (
-    `match` VARCHAR(128) PRIMARY KEY,
-    `proc` VARCHAR(128)
-);
-
 INSERT INTO `routes` VALUES
     ('/static/%', 'CALL static_handler(?, ?, ?)'),
     ('/', 'CALL index_handler(?, ?, ?)'),
     ('/reflect', 'CALL reflect_handler(?, ?, ?)'),
     ('/template_demo', 'CALL template_demo_handler(?, ?, ?)');
-
-DROP TABLE IF EXISTS `static_assets`;
-CREATE TABLE `static_assets` (
-    `path` VARCHAR(255) PRIMARY KEY,
-    `data` TEXT
-);
-
-INSERT INTO `static_assets` VALUES ('/static/foo', 'static foo file');
 
 DELIMITER $$
 
