@@ -33,15 +33,18 @@ BEGIN
     
     SET resp = 'Query params: \n';
     SELECT GROUP_CONCAT(CONCAT(`name`, ': ', `value`) SEPARATOR '\n') INTO @query_params_text FROM `query_params`;
-    SET resp = CONCAT(resp, IFNULL(@query_params_text, ''));
+    SET resp = CONCAT(resp, COALESCE(@query_params_text, ''));
     
     SET resp = CONCAT(resp, '\n\nHeaders:\n');
     SELECT GROUP_CONCAT(CONCAT(`name`, ': ', `value`) SEPARATOR '\n') INTO @headers_text FROM `headers`;
-    SET resp = CONCAT(resp, IFNULL(@headers_text, ''));
+    SET resp = CONCAT(resp, COALESCE(@headers_text, ''));
     
     SET resp = CONCAT(resp, '\n\nCookies:\n');
     SELECT GROUP_CONCAT(CONCAT(`name`, ': ', `value`) SEPARATOR '\n') INTO @cookies_text FROM `cookies`;
-    SET resp = CONCAT(resp, IFNULL(@cookies_text, ''));
+    SET resp = CONCAT(resp, COALESCE(@cookies_text, ''));
+
+    CALL set_cookie('an_cookie', 'an_value');
+    CALL set_header('X-Custom-Header', 'custom_header_value');
 END$$
 
 
@@ -57,6 +60,11 @@ END$$
 DROP PROCEDURE IF EXISTS `app`$$
 CREATE PROCEDURE `app` (IN `route` VARCHAR(255), IN `params` VARCHAR(4095), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
+    DECLARE set_cookies VARCHAR(4095);
+
+    CREATE TEMPORARY TABLE `resp_headers` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
+    CREATE TEMPORARY TABLE `resp_cookies` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
+
     CREATE TEMPORARY TABLE `query_params` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095));
     CALL parse_params(params);
 
@@ -80,6 +88,11 @@ BEGIN
         SET resp = 'Route not found.';
     END IF;
     
+    SET set_cookies = (SELECT GROUP_CONCAT((CONCAT(`name`, '=', `value`)) SEPARATOR '; ') FROM `resp_cookies`);
+    IF NOT ISNULL(set_cookies) THEN
+        INSERT INTO `resp_headers` VALUES ('Set-Cookie', set_cookies) ON DUPLICATE KEY UPDATE `value` = set_cookies;
+    END IF;
+
     INSERT INTO `responses` (route, code) VALUES (route, status);
 END$$
 

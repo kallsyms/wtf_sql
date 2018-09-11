@@ -7,10 +7,10 @@ def application(environ, start_response):
     conn = pymysql.connect("localhost", "app_sql", "app_sql", "app_sql")
     with conn.cursor() as cursor:
         headers = {k[5:]: v for (k, v) in environ.items() if k.startswith('HTTP_')}
-        cursor.execute("CREATE TEMPORARY TABLE IF NOT EXISTS headers (name VARCHAR(255) PRIMARY KEY, value VARCHAR(4095))")
+        cursor.execute("CREATE TEMPORARY TABLE IF NOT EXISTS `headers` (`name` VARCHAR(255) PRIMARY KEY, `value` VARCHAR(4095))")
 
         for k, v in headers.items():
-            cursor.execute("INSERT INTO headers VALUES (%s, %s)", (k,v))
+            cursor.execute("INSERT INTO `headers` VALUES (%s, %s) ON DUPLICATE KEY UPDATE `value` = %s", (k,v,v))
 
         app_args = [environ['PATH_INFO'], environ['QUERY_STRING'], None, None]
 
@@ -23,7 +23,9 @@ def application(environ, start_response):
 
         cursor.execute("SELECT @_app_2, @_app_3")
         code, resp = cursor.fetchone()
-        headers = []
+        cursor.execute("SELECT `name`, `value` FROM `resp_headers`")
+        headers = list(cursor.fetchall())
+        print(headers)
 
         conn.commit()
 

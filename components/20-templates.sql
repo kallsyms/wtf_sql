@@ -30,7 +30,7 @@ BEGIN
         SET replace_end = REGEXP_INSTR(formatted, @template_regex, 1, 1, 1);
         SET fmt_name = SUBSTR(formatted FROM replace_start + 2 FOR (replace_end - replace_start - 2 - 1));
         SELECT `value` INTO fmt_val FROM `template_vars` WHERE `name` = TRIM(fmt_name);
-        SET fmt_val = IFNULL(fmt_val, '');
+        SET fmt_val = COALESCE(fmt_val, '');
         SET formatted = CONCAT(SUBSTR(formatted FROM 1 FOR replace_start - 1), fmt_val, SUBSTR(formatted FROM replace_end));
     END WHILE;
 
