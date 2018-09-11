@@ -20,10 +20,10 @@ CREATE TABLE `routes` (
 );
 
 INSERT INTO `routes` VALUES
-    ('/static/%', 'CALL static_handler'),
-    ('/', 'CALL index_handler'),
-    ('/reflect', 'CALL reflect_handler'),
-    ('/template_demo', 'CALL template_demo_handler');
+    ('/static/%', 'CALL static_handler(?, ?, ?)'),
+    ('/', 'CALL index_handler(?, ?, ?)'),
+    ('/reflect', 'CALL reflect_handler(?, ?, ?)'),
+    ('/template_demo', 'CALL template_demo_handler(?, ?, ?)');
 
 DROP TABLE IF EXISTS `static_assets`;
 CREATE TABLE `static_assets` (
