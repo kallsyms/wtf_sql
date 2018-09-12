@@ -14,12 +14,12 @@ BEGIN
     CALL parse_params(post_data);
 
     CREATE TEMPORARY TABLE `cookies` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
-    IF ( SELECT EXISTS (SELECT 1 FROM `headers` WHERE `name` = 'COOKIE')) THEN
+    IF EXISTS(SELECT 1 FROM `headers` WHERE `name` = 'COOKIE') THEN
         SET req_cookies = (SELECT `value` FROM `headers` WHERE `name` = 'COOKIE');
         CALL parse_cookies(req_cookies);
     END IF;
     
-    IF ( SELECT EXISTS (SELECT 1 FROM `routes` WHERE route LIKE `match`)) THEN
+    IF EXISTS(SELECT 1 FROM `routes` WHERE route LIKE `match`) THEN
         SET @stmt = (SELECT `proc` FROM `routes` WHERE route LIKE `match` LIMIT 1);
         PREPARE handler_call FROM @stmt;
         

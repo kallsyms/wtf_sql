@@ -15,8 +15,9 @@ DELIMITER $$
 DROP PROCEDURE IF EXISTS `static_handler`$$
 CREATE PROCEDURE `static_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
-    IF ( SELECT EXISTS (SELECT 1 FROM `static_assets` WHERE `path` = route)) THEN
-        SELECT 200, `data` INTO status, resp FROM `static_assets` WHERE `path` = route;
+    IF EXISTS(SELECT 1 FROM `static_assets` WHERE `path` = route) THEN
+        SET status = 200;
+        SET resp = (SELECT `data` FROM `static_assets` WHERE `path` = route);
     ELSE
         SET status = 404;
         SET resp = 'Static file not found.';

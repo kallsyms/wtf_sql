@@ -88,7 +88,7 @@ END$$
 DROP PROCEDURE IF EXISTS `get_cookie`$$
 CREATE PROCEDURE `get_cookie` (IN `i_name` TEXT, OUT `o_value` TEXT)
 BEGIN
-    IF ( SELECT EXISTS (SELECT 1 FROM `cookies` WHERE `name` = `i_name`)) THEN
+    IF EXISTS(SELECT 1 FROM `cookies` WHERE `name` = `i_name`) THEN
         SET `o_value` = (SELECT `value` FROM `cookies` WHERE `name` = `i_name` LIMIT 1);
     ELSE
         SET `o_value` = NULL;
@@ -124,7 +124,7 @@ END$$
 DROP PROCEDURE IF EXISTS `get_param`$$
 CREATE PROCEDURE `get_param` (IN `i_name` TEXT, OUT `o_value` TEXT)
 BEGIN
-    IF ( SELECT EXISTS (SELECT 1 FROM `query_params` WHERE `name` = i_name)) THEN
+    IF EXISTS(SELECT 1 FROM `query_params` WHERE `name` = i_name) THEN
         SET o_value = (SELECT `value` FROM `query_params` WHERE `name` = i_name LIMIT 1);
     END IF;
 END$$
