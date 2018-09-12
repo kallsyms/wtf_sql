@@ -38,6 +38,21 @@ BEGIN
     END IF;
 END$$
 
+DROP PROCEDURE IF EXISTS `is_admin`$$
+CREATE PROCEDURE `is_admin` (OUT `o_admin` BOOLEAN)
+BEGIN
+    DECLARE `u_email` TEXT;
+
+    SET `u_email` = NULL;
+    CALL get_cookie('email', `u_email`);
+
+    IF ISNULL(`u_email`) THEN
+        SET o_admin = FALSE;
+    ELSE
+        SET o_admin = EXISTS(SELECT 1 FROM `users` WHERE `email` = `u_email` AND admin = TRUE);
+    END IF;
+END$$
+
 DROP PROCEDURE IF EXISTS `dump_users`$$
 CREATE PROCEDURE `dump_users` (OUT users_table TEXT)
 BEGIN

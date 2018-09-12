@@ -48,4 +48,5 @@ INSERT INTO `status_strings` VALUES
     (200, '200 OK'),
     (302, '302 Found'),
     (401, '401 Not Authorized'),
+    (403, '403 Forbidden'),
     (404, '404 Not Found');

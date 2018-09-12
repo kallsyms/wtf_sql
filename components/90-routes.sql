@@ -198,14 +198,22 @@ DROP PROCEDURE IF EXISTS `list_users_handler`$$
 CREATE PROCEDURE `list_users_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
     DECLARE users_table TEXT;
+    DECLARE admin BOOL;
 
-    SET status = 200;
+    CALL is_admin(admin);
 
-    CALL dump_users(users_table);
+    IF admin THEN
+        SET status = 200;
 
-    CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
-    INSERT INTO `template_vars` VALUES ('users_table', users_table);
-    CALL template('/templates/users.html', resp);
+        CALL dump_users(users_table);
+
+        CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
+        INSERT INTO `template_vars` VALUES ('users_table', users_table);
+        CALL template('/templates/users.html', resp);
+    ELSE
+        SET status = 403;
+        SET resp = 'You must be an admin to view this page.';
+    END IF;
 END$$
 
 
