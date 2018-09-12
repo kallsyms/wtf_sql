@@ -4,8 +4,9 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
     `id` INT PRIMARY KEY AUTO_INCREMENT,
     `email` VARCHAR(255) UNIQUE,
-    `name` VARCHAR(255),
-    `pass_hash` VARCHAR(255)
+    `name` VARCHAR(255) NOT NULL,
+    `pass_hash` VARCHAR(255) NOT NULL,
+    `admin` BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE `posts` (

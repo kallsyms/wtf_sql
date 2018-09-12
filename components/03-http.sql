@@ -20,6 +20,13 @@ BEGIN
 END$$
 
 
+DROP PROCEDURE IF EXISTS `htmlentities`$$
+CREATE PROCEDURE `htmlentities` (IN `i_str` TEXT, OUT `o_str` TEXT)
+BEGIN
+    SET o_str = REPLACE(REPLACE(i_str, '<', '&lt;'), '>', '&gt;');
+END$$
+
+
 
 
 DROP PROCEDURE IF EXISTS `sign_cookie`$$

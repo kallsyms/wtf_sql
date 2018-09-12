@@ -66,7 +66,10 @@ END$$
 DROP PROCEDURE IF EXISTS `create_post`$$
 CREATE PROCEDURE `create_post` (IN `i_user_id` INT, IN `i_text` TEXT)
 BEGIN
-    INSERT INTO `posts` (`user_id`, `text`) VALUES (`i_user_id`, `i_text`);
+    DECLARE encoded_post TEXT;
+    CALL htmlentities(i_text, encoded_post);
+
+    INSERT INTO `posts` (`user_id`, `text`) VALUES (`i_user_id`, `encoded_post`);
 END$$
 
 DROP PROCEDURE IF EXISTS `get_user_recent_post_list`$$
