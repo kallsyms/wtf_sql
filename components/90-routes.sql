@@ -7,6 +7,7 @@ INSERT INTO `routes` VALUES
     ('/template_demo', 'CALL template_demo_handler(?, ?, ?)'),
     ('/login', 'CALL login_handler(?, ?, ?)'),
     ('/register', 'CALL register_handler(?, ?, ?)'),
+    ('/post', 'CALL post_handler(?, ?, ?)'),
     ('/list_users', 'CALL list_users_handler(?, ?, ?)');
 
 DELIMITER $$
@@ -100,23 +101,31 @@ END$$
 DROP PROCEDURE IF EXISTS `login_handler`$$
 CREATE PROCEDURE `login_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
-    DECLARE name, email, password TEXT;
+    DECLARE email, password TEXT;
     DECLARE auth BOOLEAN;
 
     
-    CALL get_param('email', email);
-    CALL get_param('password', password);
+    SET `email` = NULL;
+    SET `password` = NULL;
 
-    CALL check_password(email, password, auth);
-    IF auth THEN
-        SET resp = CONCAT(email, ', ', password);
-        CALL set_cookie('email', email);
-        CALL redirect('/', status);
+    CALL get_param('email', `email`);
+    CALL get_param('password', `password`);
+
+    IF ISNULL(`email`) OR ISNULL(`password`) THEN
+        SET status = 200;
+        CALL template('/templates/login.html', resp);
     ELSE
-        SET status = 401;
-        
-        CALL set_template_var('error_msg', 'Email or password is incorrect.');
-        CALL template('/templates/404.html', resp);
+        CALL check_password(`email`, `password`, `auth`);
+        IF auth THEN
+            SET resp = CONCAT(`email`, ', ', `password`);
+            CALL set_cookie('email', `email`);
+            CALL redirect('/', status);
+        ELSE
+            SET status = 401;
+            
+            CALL set_template_var('error_msg', 'Email or password is incorrect.');
+            CALL template('/templates/404.html', resp);
+        END IF;
     END IF;
 END$$
 
@@ -147,9 +156,34 @@ BEGIN
     ELSE
         SET resp = 'Registered!!!!';
         CALL create_user(`email`, `name`, `password`);
+        CALL set_cookie('email', `email`); -- log them in
         CALL redirect('/', status);
     END IF;
 END$$
+
+DROP PROCEDURE IF EXISTS `post_handler`$$
+CREATE PROCEDURE `post_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
+BEGIN
+    DECLARE logged_in BOOLEAN;
+    DECLARE u_email TEXT;
+    DECLARE user_id INT;
+    DECLARE post_text TEXT;
+
+    SET resp = '';
+
+    CALL is_logged_in(logged_in);
+    IF logged_in THEN
+        CALL get_cookie('email', u_email);
+        CALL get_param('post', post_text);
+        SET user_id = (SELECT `id` FROM `users` WHERE `email` = u_email);
+        
+        CALL create_post(user_id, post_text);
+        CALL redirect('/', status);
+    ELSE
+        CALL redirect('/login', status);
+    END IF;
+END$$
+
 
 
 DROP PROCEDURE IF EXISTS `list_users_handler`$$

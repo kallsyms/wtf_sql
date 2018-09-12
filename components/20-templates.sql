@@ -21,7 +21,7 @@ END$$
 DROP PROCEDURE IF EXISTS `template_string`$$
 CREATE PROCEDURE `template_string` (IN `template_s` TEXT, OUT `resp` TEXT)
 BEGIN
-    DECLARE formatted TEXT;
+    DECLARE formatted LONGTEXT;
     DECLARE fmt_name, fmt_val TEXT;
     DECLARE replace_start, replace_end INT;
 

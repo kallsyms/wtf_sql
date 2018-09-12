@@ -74,7 +74,7 @@ CREATE PROCEDURE `get_user_recent_post_list` (IN `i_user_id` INT, OUT `o_post_li
 BEGIN
     DECLARE done BOOLEAN;
     DECLARE curr_row TEXT;
-    DECLARE posts_cur CURSOR FOR SELECT CONCAT('<li><div class=post-text>', `text`, '</div></li>') FROM `posts` WHERE `user_id` = `i_user_id`;
+    DECLARE posts_cur CURSOR FOR SELECT CONCAT('<li><div class=post-text>', `text`, '</div></li>') FROM `posts` WHERE `user_id` = `i_user_id` LIMIT 50;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
     
     SET o_post_list = '';
