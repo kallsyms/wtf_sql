@@ -70,19 +70,20 @@ END$$
 DROP PROCEDURE IF EXISTS `reflect_handler`$$
 CREATE PROCEDURE `reflect_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
+    DECLARE tmp TEXT;
     SET status = 200;
     
     SET resp = 'Query params: \n';
-    SELECT GROUP_CONCAT(CONCAT(`name`, ': ', `value`) SEPARATOR '\n') INTO @query_params_text FROM `query_params`;
-    SET resp = CONCAT(resp, COALESCE(@query_params_text, ''));
+    SET tmp = (SELECT GROUP_CONCAT(CONCAT(`name`, ': ', `value`) SEPARATOR '\n') FROM `query_params`);
+    SET resp = CONCAT(resp, COALESCE(tmp, ''));
     
     SET resp = CONCAT(resp, '\n\nHeaders:\n');
-    SELECT GROUP_CONCAT(CONCAT(`name`, ': ', `value`) SEPARATOR '\n') INTO @headers_text FROM `headers`;
-    SET resp = CONCAT(resp, COALESCE(@headers_text, ''));
+    SET tmp = (SELECT GROUP_CONCAT(CONCAT(`name`, ': ', `value`) SEPARATOR '\n') FROM `headers`);
+    SET resp = CONCAT(resp, COALESCE(tmp, ''));
     
     SET resp = CONCAT(resp, '\n\nCookies:\n');
-    SELECT GROUP_CONCAT(CONCAT(`name`, ': ', `value`) SEPARATOR '\n') INTO @cookies_text FROM `cookies`;
-    SET resp = CONCAT(resp, COALESCE(@cookies_text, ''));
+    SET tmp = (SELECT GROUP_CONCAT(CONCAT(`name`, ': ', `value`) SEPARATOR '\n') FROM `cookies`);
+    SET resp = CONCAT(resp, COALESCE(tmp, ''));
 
     CALL set_cookie('an_cookie', 'an_value');
     CALL set_header('X-Custom-Header', 'custom_header_value');
