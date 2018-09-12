@@ -3,6 +3,25 @@
 DELIMITER $$
 
 
+DROP PROCEDURE IF EXISTS `urldecode`$$
+CREATE PROCEDURE `urldecode` (IN `i_str` TEXT, OUT `o_str` TEXT)
+BEGIN
+    DECLARE decoded TEXT;
+    DECLARE hex CHAR(2);
+
+    SET decoded = i_str;
+
+    WHILE (INSTR(decoded, '%') > 0) DO
+        SET hex = SUBSTR(decoded FROM INSTR(decoded, '%') + 1 FOR 2);
+        SET decoded = CONCAT(SUBSTR(decoded FROM 1 FOR INSTR(decoded, '%') - 1), UNHEX(hex), SUBSTR(decoded FROM INSTR(decoded, '%') + 3));
+    END WHILE;
+
+    SET o_str = decoded;
+END$$
+
+
+
+
 DROP PROCEDURE IF EXISTS `sign_cookie`$$
 CREATE PROCEDURE `sign_cookie` (IN `cookie_value` TEXT, OUT `signed` TEXT)
 BEGIN
@@ -11,7 +30,7 @@ BEGIN
 
     SET signature = SHA2(CONCAT(cookie_value, secret), 256);
 
-    SET signed = CONCAT(signature, '.', cookie_value);
+    SET signed = CONCAT(signature, LOWER(HEX(cookie_value)));
 END$$
 
 
@@ -22,7 +41,7 @@ BEGIN
     SET secret = (SELECT `value` FROM `config` WHERE `name` = 'signing_key');
     
     SET signature = SUBSTR(signed_value FROM 1 FOR 64);
-    SET cookie_value = SUBSTR(signed_value FROM 66);
+    SET cookie_value = UNHEX(SUBSTR(signed_value FROM 65));
 
     SET valid = (SELECT SHA2(CONCAT(cookie_value, secret), 256) = signature);
 END$$
@@ -83,14 +102,17 @@ DROP PROCEDURE IF EXISTS `parse_params`$$
 CREATE PROCEDURE `parse_params` (IN `params` TEXT)
 BEGIN
     -- Parse URL params of the form a=b&b=c&c=d
-    DECLARE cur_params, param, param_name, param_value TEXT;
+    DECLARE cur_params, param, encoded_param_name, param_name, encoded_param_value, param_value TEXT;
     SET cur_params = params;
 
     WHILE ( INSTR(cur_params, '=') > 0 ) DO 
         SET param = SUBSTRING_INDEX(cur_params, '&', 1);
 
-        SET param_name = TRIM(SUBSTRING(param FROM 1 FOR INSTR(param, '=') - 1));
-        SET param_value = TRIM(SUBSTRING(param FROM INSTR(param, '=') + 1));
+        SET encoded_param_name = TRIM(SUBSTRING(param FROM 1 FOR INSTR(param, '=') - 1));
+        SET encoded_param_value = TRIM(SUBSTRING(param FROM INSTR(param, '=') + 1));
+
+        CALL urldecode(encoded_param_name, param_name);
+        CALL urldecode(encoded_param_value, param_value);
 
         INSERT INTO `query_params` VALUES (param_name, param_value) ON DUPLICATE KEY UPDATE `value` = param_value;
 
