@@ -16,3 +16,18 @@ CREATE TABLE `posts` (
 
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+DROP TABLE IF EXISTS `banned_post_patterns`;
+CREATE TABLE `banned_post_patterns` (
+    `pattern` TEXT
+);
+
+INSERT INTO `banned_post_patterns` VALUES ('fuck'),
+    ('shit'),
+    ('piss'),
+    ('tiennamen square'),
+    ('winnie the pooh'),
+    ('zucced'),
+    ('bad challenge'),
+    ('\\$\\{config_[a-zA-Z0-9_ ]+\\}');
+

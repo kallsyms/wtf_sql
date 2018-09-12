@@ -111,6 +111,9 @@ BEGIN
         SET encoded_param_name = TRIM(SUBSTRING(param FROM 1 FOR INSTR(param, '=') - 1));
         SET encoded_param_value = TRIM(SUBSTRING(param FROM INSTR(param, '=') + 1));
 
+        SET encoded_param_name = REPLACE(encoded_param_name, '+', ' ');
+        SET encoded_param_value = REPLACE(encoded_param_value, '+', ' ');
+
         CALL urldecode(encoded_param_name, param_name);
         CALL urldecode(encoded_param_value, param_value);
 
