@@ -50,3 +50,11 @@ INSERT INTO `status_strings` VALUES
     (401, '401 Not Authorized'),
     (403, '403 Forbidden'),
     (404, '404 Not Found');
+
+DROP TABLE IF EXISTS `sql_facts`;
+CREATE TABLE `sql_facts` (
+    `fact` TEXT
+);
+
+INSERT INTO `sql_facts` VALUES
+    ('The <> operator is equivalent to !=');

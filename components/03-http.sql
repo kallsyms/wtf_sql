@@ -83,12 +83,12 @@ END$$
 
 
 DROP PROCEDURE IF EXISTS `set_cookie`$$
-CREATE PROCEDURE `set_cookie` (IN `name` VARCHAR(255), IN `value` TEXT)
+CREATE PROCEDURE `set_cookie` (IN `i_name` VARCHAR(255), IN `i_value` TEXT)
 BEGIN
     DECLARE signed_value TEXT;
-    CALL sign_cookie(value, signed_value);
+    CALL sign_cookie(i_value, signed_value);
 
-    INSERT INTO `resp_cookies` VALUES (name, signed_value) ON DUPLICATE KEY UPDATE `value` = signed_value;
+    INSERT INTO `resp_cookies` VALUES (i_name, signed_value) ON DUPLICATE KEY UPDATE `value` = signed_value;
 END$$
 
 

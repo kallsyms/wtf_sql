@@ -1,4 +1,4 @@
-# wtf.sql
+# WTF.SQL
 
 Description: I heard that moving application logic into the database could improve performance, so I moved _everything_ into the database!
 Points: 400
@@ -28,4 +28,3 @@ Formatting notes:
 
 TODO:
 - remove config
-- X-SQL-Facts

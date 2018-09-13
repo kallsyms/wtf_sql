@@ -3,12 +3,12 @@
 INSERT INTO `routes` VALUES
     ('/static/%', 'CALL static_handler(?, ?, ?)'),
     ('/', 'CALL index_handler(?, ?, ?)'),
-    ('/reflect', 'CALL reflect_handler(?, ?, ?)'),
-    ('/template_demo', 'CALL template_demo_handler(?, ?, ?)'),
+    -- ('/reflect', 'CALL reflect_handler(?, ?, ?)'),
+    -- ('/template_demo', 'CALL template_demo_handler(?, ?, ?)'),
     ('/login', 'CALL login_handler(?, ?, ?)'),
     ('/register', 'CALL register_handler(?, ?, ?)'),
     ('/post', 'CALL post_handler(?, ?, ?)'),
-    ('/list_users', 'CALL list_users_handler(?, ?, ?)');
+    ('/admin', 'CALL admin_handler(?, ?, ?)');
 
 DELIMITER $$
 
@@ -105,7 +105,6 @@ CREATE PROCEDURE `login_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT
 BEGIN
     DECLARE email, password TEXT;
     DECLARE auth BOOLEAN;
-
     
     SET `email` = NULL;
     SET `password` = NULL;
@@ -120,7 +119,7 @@ BEGIN
         CALL check_password(`email`, `password`, `auth`);
         IF auth THEN
             SET resp = CONCAT(`email`, ', ', `password`);
-            CALL set_cookie('email', `email`);
+            CALL login(`email`);
             CALL redirect('/', status);
         ELSE
             SET status = 401;
@@ -158,7 +157,7 @@ BEGIN
     ELSE
         SET resp = 'Registered!!!!';
         CALL create_user(`email`, `name`, `password`);
-        CALL set_cookie('email', `email`); -- log them in
+        CALL login(`email`);
         CALL redirect('/', status);
     END IF;
 END$$
@@ -194,22 +193,60 @@ END$$
 
 
 
-DROP PROCEDURE IF EXISTS `list_users_handler`$$
-CREATE PROCEDURE `list_users_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
+DROP PROCEDURE IF EXISTS `admin_handler`$$
+CREATE PROCEDURE `admin_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
-    DECLARE users_table TEXT;
-    DECLARE admin BOOL;
+    DECLARE u_email, table_name, rendered_table, html TEXT;
+    DECLARE admin, can_view_panels, can_create_panels  BOOL;
+
+    DECLARE done BOOLEAN;
+    DECLARE panel_cur CURSOR FOR SELECT `tbl` FROM `panels` WHERE `email` = `u_email`;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
     CALL is_admin(admin);
 
     IF admin THEN
-        SET status = 200;
+        CALL get_cookie('email', u_email);
 
-        CALL dump_users(users_table);
+        CALL has_priv('panel_view', can_view_panels);
+        CALL has_priv('panel_create', can_create_panels);
 
+        SET html = '';
+        SET rendered_table = '';
+
+        IF can_create_panels THEN
+            CALL get_param('tbl', table_name);
+
+            IF table_name <> '' THEN
+                INSERT INTO `panels` VALUES (`u_email`, `table_name`);
+            END IF;
+
+            CALL template('/templates/admin_create_panel_partial.html', rendered_table);
+            SET html = CONCAT(html, rendered_table);
+        END IF;
+
+        SET rendered_table = '';
+        IF can_view_panels THEN
+            OPEN panel_cur;
+            panels_loop: LOOP
+                FETCH panel_cur INTO table_name;
+                IF done THEN
+                    CLOSE panel_cur;
+                    LEAVE panels_loop;
+                END IF;
+
+                CALL dump_table_html(table_name, rendered_table);
+
+                SET html = CONCAT(html, rendered_table, '<br/>');
+            END LOOP panels_loop;
+        END IF;
+
+        DROP TEMPORARY TABLE IF EXISTS `template_vars`;
         CREATE TEMPORARY TABLE IF NOT EXISTS `template_vars` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
-        INSERT INTO `template_vars` VALUES ('users_table', users_table);
-        CALL template('/templates/users.html', resp);
+        INSERT INTO `template_vars` VALUES ('tables', html);
+
+        SET status = 200;
+        CALL template('/templates/admin.html', resp);
     ELSE
         SET status = 403;
         SET resp = 'You must be an admin to view this page.';

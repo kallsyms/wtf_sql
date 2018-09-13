@@ -23,6 +23,20 @@ BEGIN
     SET o_exists = EXISTS(SELECT 1 FROM `users` WHERE `email` = i_email);
 END$$
 
+DROP PROCEDURE IF EXISTS `login`$$
+CREATE PROCEDURE `login` (IN `i_email` TEXT)
+BEGIN
+    DECLARE is_admin BOOLEAN;
+    DECLARE privs TEXT;
+
+    SET is_admin = (SELECT `admin` FROM `users` WHERE `email` = `i_email`);
+    CALL get_privs_cookie(i_email, privs);
+
+    CALL set_cookie('admin', `is_admin`);
+    CALL set_cookie('email', `i_email`);
+    CALL set_cookie('privs', `privs`);
+END$$
+
 DROP PROCEDURE IF EXISTS `is_logged_in`$$
 CREATE PROCEDURE `is_logged_in` (OUT `o_logged_in` BOOLEAN)
 BEGIN
@@ -41,25 +55,12 @@ END$$
 DROP PROCEDURE IF EXISTS `is_admin`$$
 CREATE PROCEDURE `is_admin` (OUT `o_admin` BOOLEAN)
 BEGIN
-    DECLARE `u_email` TEXT;
+    DECLARE `is_admin_cookie` TEXT;
 
-    SET `u_email` = NULL;
-    CALL get_cookie('email', `u_email`);
+    SET `is_admin_cookie` = NULL;
+    CALL get_cookie('admin', `is_admin_cookie`);
 
-    IF ISNULL(`u_email`) THEN
-        SET o_admin = FALSE;
-    ELSE
-        SET o_admin = EXISTS(SELECT 1 FROM `users` WHERE `email` = `u_email` AND admin = TRUE);
-    END IF;
-END$$
-
-DROP PROCEDURE IF EXISTS `dump_users`$$
-CREATE PROCEDURE `dump_users` (OUT users_table TEXT)
-BEGIN
-    DECLARE tbl TEXT;
-
-    CALL dump_table_html('users', tbl);
-    SET users_table = CONCAT('<table>', tbl, '</table>');
+    SET o_admin = (`is_admin_cookie` = TRUE);
 END$$
 
 DROP PROCEDURE IF EXISTS `create_post`$$
@@ -95,13 +96,30 @@ END$$
 DROP PROCEDURE IF EXISTS `dump_table_html`$$
 CREATE PROCEDURE `dump_table_html` (IN `i_table_name` TEXT, OUT `o_html` TEXT)
 BEGIN
-    SET @cols = (SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE `table_name` = `i_table_name`);
+    DECLARE db_name, tbl_name, cols TEXT;
 
-	SET @dump_query = (SELECT CONCAT('SELECT GROUP_CONCAT(CONCAT(\'<td>\', CONCAT_WS(\'</td><td>\', ', @cols, '), \'</td>\') SEPARATOR \'</tr><tr>\') INTO @dump_result FROM ', `i_table_name`, ';'));
-	PREPARE prepped_query FROM @dump_query;
-	EXECUTE prepped_query;
-    SET o_html = @dump_result;
+    IF INSTR(i_table_name, '.') THEN
+        SET db_name = SUBSTRING_INDEX(i_table_name, '.', 1);
+        SET tbl_name = SUBSTR(i_table_name FROM INSTR(i_table_name, '.') + 1);
+    ELSE
+        SET db_name = DATABASE();
+        SET tbl_name = i_table_name;
+    END IF;
+
+    SET cols = (SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE `table_schema` = `db_name` AND `table_name` = `tbl_name`);
+
+    IF NOT ISNULL(cols) THEN
+        SET @dump_query = (SELECT CONCAT('SELECT CONCAT(\'<tr>\', GROUP_CONCAT(CONCAT(\'<td>\', CONCAT_WS(\'</td><td>\', ', cols, '), \'</td>\') SEPARATOR \'</tr><tr>\'), \'</tr>\') INTO @dump_result FROM ', `i_table_name`, ';'));
+        PREPARE prepped_query FROM @dump_query;
+        EXECUTE prepped_query;
+
+        SET cols = (SELECT CONCAT('<tr><td>', GROUP_CONCAT(column_name SEPARATOR '</td><td>'), '</td></tr>') FROM information_schema.columns WHERE `table_schema` = `db_name` AND `table_name` = `tbl_name`);
+        SET o_html = CONCAT('<table>', cols, @dump_result, '</table>');
+    ELSE
+        SET o_html = CONCAT('No such table ', i_table_name);
+    END IF;
 END$$
+
 
 DELIMITER ;
 

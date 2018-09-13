@@ -32,3 +32,23 @@ INSERT INTO `banned_post_patterns` VALUES ('fuck'),
     ('bad challenge'),
     ('\\$\\{config_[a-zA-Z0-9_ ]+\\}');
 
+
+DROP TABLE IF EXISTS `priv_config`;
+CREATE TABLE `priv_config` (
+    `name` VARCHAR(255) PRIMARY KEY,
+    `value` TEXT
+);
+
+DROP TABLE IF EXISTS `admin_privs`;
+CREATE TABLE `admin_privs` (
+    `email` VARCHAR(255),
+    `priv` VARCHAR(255),
+    PRIMARY KEY (`email`, `priv`)
+);
+
+DROP TABLE IF EXISTS `panels`;
+CREATE TABLE `panels` (
+    `email` VARCHAR(255),
+    `tbl` VARCHAR(255),
+    PRIMARY KEY (`email`, `tbl`)
+);

@@ -1,11 +1,5 @@
 FROM mysql
 
-#RUN yum -y update && yum -y install \
-    #python \
-    #python-setuptools \
-    #python-devel \
-    #gcc
-
 RUN apt-get update && apt-get install -y \
     python \
     python-dev \

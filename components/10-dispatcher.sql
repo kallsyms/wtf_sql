@@ -1,12 +1,23 @@
 DELIMITER $$
 
+DROP PROCEDURE IF EXISTS `generate_sql_fact`$$
+CREATE PROCEDURE `generate_sql_fact` ()
+BEGIN
+    INSERT INTO `resp_headers` VALUES ('X-SQL-Fact', (SELECT `fact` FROM `sql_facts` ORDER BY RAND() LIMIT 1));
+END$$
+
 DROP PROCEDURE IF EXISTS `app`$$
 CREATE PROCEDURE `app` (IN `route` VARCHAR(255), IN `params` TEXT, IN `post_data` TEXT, OUT `status` TEXT, OUT `resp` TEXT)
 BEGIN
-    DECLARE req_cookies, resp_cookies TEXT;
+    DECLARE req_cookies TEXT;
     DECLARE status_code INT;
 
-    CREATE TEMPORARY TABLE `resp_headers` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
+    SET SESSION group_concat_max_len = 131072;
+
+    CREATE TEMPORARY TABLE `resp_headers` (`name` VARCHAR(255), `value` TEXT);
+    INSERT INTO `resp_headers` VALUES ('Server', 'WTF.SQL');
+    CALL generate_sql_fact();
+
     CREATE TEMPORARY TABLE `resp_cookies` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
 
     CREATE TEMPORARY TABLE `query_params` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
@@ -33,14 +44,11 @@ BEGIN
         SET resp = 'Route not found.';
     END IF;
     
-    SET resp_cookies = (SELECT GROUP_CONCAT((CONCAT(`name`, '=', `value`)) SEPARATOR '; ') FROM `resp_cookies`);
-    IF NOT ISNULL(resp_cookies) THEN
-        INSERT INTO `resp_headers` VALUES ('Set-Cookie', resp_cookies) ON DUPLICATE KEY UPDATE `value` = resp_cookies;
-    END IF;
-
-    SET status = (SELECT `message` FROM `status_strings` WHERE `code` = status_code);
+    INSERT INTO `resp_headers` SELECT 'Set-Cookie', COALESCE(CONCAT(`name`, '=', `value`), '') FROM `resp_cookies`;
 
     INSERT INTO `responses` (route, code) VALUES (route, status_code);
+
+    SET status = (SELECT `message` FROM `status_strings` WHERE `code` = status_code);
 END$$
 
 DELIMITER ;
