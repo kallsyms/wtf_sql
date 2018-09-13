@@ -56,26 +56,10 @@ END$$
 DROP PROCEDURE IF EXISTS `dump_users`$$
 CREATE PROCEDURE `dump_users` (OUT users_table TEXT)
 BEGIN
-    DECLARE done BOOLEAN;
-    DECLARE curr_row TEXT;
-    DECLARE stuff TEXT;
-    DECLARE users_cur CURSOR FOR SELECT CONCAT('<td>', `id`, '</td><td>', `email`, '</td><td>', `name`, '</td><td>', `pass_hash`, '</td>') FROM `users`;
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    DECLARE tbl TEXT;
 
-    OPEN users_cur;
-    SET stuff = '';
-
-    users_loop: LOOP
-        FETCH users_cur INTO curr_row;
-        IF done THEN
-            CLOSE users_cur;
-            LEAVE users_loop;
-        END IF;
-        
-        SET stuff = CONCAT(stuff, '<tr>', curr_row, '</tr>');
-    END LOOP users_loop;
-
-    SET users_table = CONCAT('<table>', stuff, '</table>');
+    CALL dump_table_html('users', tbl);
+    SET users_table = CONCAT('<table>', tbl, '</table>');
 END$$
 
 DROP PROCEDURE IF EXISTS `create_post`$$
@@ -106,6 +90,17 @@ BEGIN
 
         SET o_post_list = CONCAT(o_post_list, curr_row);
     END LOOP posts_loop;
+END$$
+
+DROP PROCEDURE IF EXISTS `dump_table_html`$$
+CREATE PROCEDURE `dump_table_html` (IN `i_table_name` TEXT, OUT `o_html` TEXT)
+BEGIN
+    SET @cols = (SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE `table_name` = `i_table_name`);
+
+	SET @dump_query = (SELECT CONCAT('SELECT GROUP_CONCAT(CONCAT(\'<td>\', CONCAT_WS(\'</td><td>\', ', @cols, '), \'</td>\') SEPARATOR \'</tr><tr>\') INTO @dump_result FROM ', `i_table_name`, ';'));
+	PREPARE prepped_query FROM @dump_query;
+	EXECUTE prepped_query;
+    SET o_html = @dump_result;
 END$$
 
 DELIMITER ;
