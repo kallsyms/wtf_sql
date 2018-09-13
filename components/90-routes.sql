@@ -33,7 +33,8 @@ BEGIN
     if logged_in THEN
         CALL logged_in_index_handler(status, resp);
     ELSE
-        CALL logged_out_index_handler(status, resp);
+        SET resp = 'redirecting to register...';
+        CALL redirect('/register', status);
     END IF;
 END$$
 
@@ -57,14 +58,6 @@ BEGIN
     
     SET status = 200;
     CALL template('/templates/index_logged_in.html', resp);
-END$$
-
-
-DROP PROCEDURE IF EXISTS `logged_out_index_handler`$$
-CREATE PROCEDURE `logged_out_index_handler` (OUT `status` INT, OUT `resp` TEXT)
-BEGIN
-    SET status = 200;
-    SET resp = 'Hello world (logged_out)!';
 END$$
 
     
