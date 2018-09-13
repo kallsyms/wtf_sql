@@ -23,7 +23,7 @@ CREATE TABLE `routes` (
 DROP TABLE IF EXISTS `static_assets`;
 CREATE TABLE `static_assets` (
     `path` VARCHAR(255) PRIMARY KEY,
-    `data` TEXT
+    `data` LONGBLOB
 );
 
 DROP TABLE IF EXISTS `templates`;
