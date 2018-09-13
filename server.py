@@ -39,4 +39,4 @@ def application(environ, start_response):
         conn.commit()
 
         start_response(status, headers)
-        return resp.encode("utf-8")
+        return resp

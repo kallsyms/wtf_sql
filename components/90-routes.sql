@@ -13,7 +13,7 @@ INSERT INTO `routes` VALUES
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS `static_handler`$$
-CREATE PROCEDURE `static_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
+CREATE PROCEDURE `static_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` LONGBLOB)
 BEGIN
     IF EXISTS(SELECT 1 FROM `static_assets` WHERE `path` = route) THEN
         SET status = 200;

@@ -7,7 +7,7 @@ BEGIN
 END$$
 
 DROP PROCEDURE IF EXISTS `app`$$
-CREATE PROCEDURE `app` (IN `route` VARCHAR(255), IN `params` TEXT, IN `post_data` TEXT, OUT `status` TEXT, OUT `resp` TEXT)
+CREATE PROCEDURE `app` (IN `route` VARCHAR(255), IN `params` TEXT, IN `post_data` TEXT, OUT `status` TEXT, OUT `resp` LONGBLOB)
 BEGIN
     DECLARE req_cookies TEXT;
     DECLARE status_code INT;
