@@ -57,4 +57,6 @@ CREATE TABLE `sql_facts` (
 );
 
 INSERT INTO `sql_facts` VALUES
-    ('The <> operator is equivalent to !=');
+    ('The <> operator is equivalent to !='),
+    ('MongoDB (a NoSQL database) ships with no authentication by default!'),
+    ('MySQL silently truncates data if it can\'t fit into the destination field');

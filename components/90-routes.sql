@@ -45,7 +45,7 @@ DROP PROCEDURE IF EXISTS `robots_txt_handler`$$
 CREATE PROCEDURE `robots_txt_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
 BEGIN
     SET status = 200;
-    SET resp = CONCAT('User-agent: *\n', (SELECT GROUP_CONCAT(CONCAT('Disallow: ', `match`, ' # procedure:', proc) SEPARATOR '\n') FROM `routes`));
+    SET resp = CONCAT('User-agent: *\n', (SELECT GROUP_CONCAT(CONCAT('Disallow: ', `match`, ' # procedure:', proc) SEPARATOR '\n') FROM `routes`), '\n\n# Yeah, we know this is contrived :(');
 END$$
 
 
