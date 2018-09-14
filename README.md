@@ -3,6 +3,7 @@
 Description: (see crawl.txt)
 Points: 500
 Category: Web
+Flag: `flag{b3tter_th@n_th3_prequels}`
 
 Solve:
 1. robots.txt -> find all routes
@@ -21,6 +22,3 @@ Formatting notes:
         * response is TEXT
     * Naming
         * k/v pairs are always `name` `value` (to add to the confusion)
-
-TODO:
-* Remove admin account/config
