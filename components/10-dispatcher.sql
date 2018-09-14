@@ -31,7 +31,7 @@ BEGIN
     END IF;
     
     IF EXISTS(SELECT 1 FROM `routes` WHERE route LIKE `match`) THEN
-        SET @stmt = (SELECT `proc` FROM `routes` WHERE route LIKE `match` LIMIT 1);
+        SET @stmt = (SELECT CONCAT('CALL ', `proc`, '(?, ?, ?)') FROM `routes` WHERE route LIKE `match` LIMIT 1);
         PREPARE handler_call FROM @stmt;
         
         SET @route = route;

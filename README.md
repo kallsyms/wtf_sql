@@ -1,21 +1,17 @@
 # WTF.SQL
 
-Description: I heard that moving application logic into the database could improve performance, so I moved _everything_ into the database!
-Points: 400
+Description: (see crawl.txt)
+Points: 500
 Category: Web
 
 Solve:
+1. robots.txt -> find all routes
+1. use verifier route to leak source for all routes, subroutines
 1. Template injection -> `${ GET_hi }` if `GET_hi` is `${ secret }` then it will get interpolated again leaking secret
-2. secret is used to sign secure cookies
-3. allows you to change `is_admin`
-4. 
-...
-n-1. insert route with arb `SELECT ...`
-n. leak everything, flag in another table, db, global, etc.
-
-Bug ideas:
-    * template injection -> leak config
-    * "pass-the-signature" -> get the server to sign an arbitrary value in another cookie, substitute with the `is_admin` cookie since name is not part of the signature
+1. secret is used to sign secure cookies
+1. allows you to change `is_admin`
+1. get to admin panel, need to add privileges
+1. HLE to add `panel_create` priv, giving you arbitrary db.table read
 
 Formatting notes:
     * Types
@@ -27,4 +23,4 @@ Formatting notes:
         * k/v pairs are always `name` `value` (to add to the confusion)
 
 TODO:
-- remove config
+* Remove admin account/config

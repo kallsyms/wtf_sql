@@ -1,14 +1,16 @@
 -- Routes
 
 INSERT INTO `routes` VALUES
-    ('/static/%', 'CALL static_handler(?, ?, ?)'),
-    ('/', 'CALL index_handler(?, ?, ?)'),
-    -- ('/reflect', 'CALL reflect_handler(?, ?, ?)'),
-    -- ('/template_demo', 'CALL template_demo_handler(?, ?, ?)'),
-    ('/login', 'CALL login_handler(?, ?, ?)'),
-    ('/register', 'CALL register_handler(?, ?, ?)'),
-    ('/post', 'CALL post_handler(?, ?, ?)'),
-    ('/admin', 'CALL admin_handler(?, ?, ?)');
+    ('/', 'index_handler'),
+    ('/robots.txt', 'robots_txt_handler'),
+    ('/verify', 'verify_handler'),
+    ('/static/%', 'static_handler'),
+    -- ('/reflect', 'reflect_handler'),
+    -- ('/template_demo', 'template_demo_handler'),
+    ('/login', 'login_handler'),
+    ('/register', 'register_handler'),
+    ('/post', 'post_handler'),
+    ('/admin', 'admin_handler');
 
 DELIMITER $$
 
@@ -35,6 +37,31 @@ BEGIN
     ELSE
         SET resp = 'redirecting to register...';
         CALL redirect('/register', status);
+    END IF;
+END$$
+
+
+DROP PROCEDURE IF EXISTS `robots_txt_handler`$$
+CREATE PROCEDURE `robots_txt_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
+BEGIN
+    SET status = 200;
+    SET resp = CONCAT('User-agent: *\n', (SELECT GROUP_CONCAT(CONCAT('Disallow: ', `match`, ' # procedure:', proc) SEPARATOR '\n') FROM `routes`));
+END$$
+
+
+DROP PROCEDURE IF EXISTS `verify_handler`$$
+CREATE PROCEDURE `verify_handler` (IN `route` VARCHAR(255), OUT `status` INT, OUT `resp` TEXT)
+BEGIN
+    DECLARE proc TEXT;
+
+    SET proc = NULL;
+    CALL get_param('proc', proc);
+
+    SET status = 200;
+    IF ISNULL(proc) THEN
+        SET resp = 'Missing required param \'proc\'!';
+    ELSE
+        SET resp = COALESCE((SELECT routine_definition FROM information_schema.routines WHERE routine_name = proc), 'No such procedure!');
     END IF;
 END$$
 

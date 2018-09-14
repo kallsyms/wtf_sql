@@ -107,17 +107,14 @@ BEGIN
     END IF;
 
     SET cols = (SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE `table_schema` = `db_name` AND `table_name` = `tbl_name`);
+    SET cols = COALESCE(cols, '\'\'');
 
-    IF NOT ISNULL(cols) THEN
-        SET @dump_query = (SELECT CONCAT('SELECT CONCAT(\'<tr>\', GROUP_CONCAT(CONCAT(\'<td>\', CONCAT_WS(\'</td><td>\', ', cols, '), \'</td>\') SEPARATOR \'</tr><tr>\'), \'</tr>\') INTO @dump_result FROM ', `i_table_name`, ';'));
-        PREPARE prepped_query FROM @dump_query;
-        EXECUTE prepped_query;
+    SET @dump_query = (SELECT CONCAT('SELECT CONCAT(\'<tr>\', GROUP_CONCAT(CONCAT(\'<td>\', CONCAT_WS(\'</td><td>\', ', cols, '), \'</td>\') SEPARATOR \'</tr><tr>\'), \'</tr>\') INTO @dump_result FROM ', `i_table_name`, ';'));
+    PREPARE prepped_query FROM @dump_query;
+    EXECUTE prepped_query;
 
-        SET cols = (SELECT CONCAT('<tr><td>', GROUP_CONCAT(column_name SEPARATOR '</td><td>'), '</td></tr>') FROM information_schema.columns WHERE `table_schema` = `db_name` AND `table_name` = `tbl_name`);
-        SET o_html = CONCAT('<table>', cols, @dump_result, '</table>');
-    ELSE
-        SET o_html = CONCAT('No such table ', i_table_name);
-    END IF;
+    SET cols = (SELECT CONCAT('<tr><td>', GROUP_CONCAT(column_name SEPARATOR '</td><td>'), '</td></tr>') FROM information_schema.columns WHERE `table_schema` = `db_name` AND `table_name` = `tbl_name`);
+    SET o_html = CONCAT('<table>', cols, @dump_result, '</table>');
 END$$
 
 

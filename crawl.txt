@@ -26,5 +26,10 @@ stolen schema that can save
 the animals and restore
 freedom to the internet.....
 
+Your mission is to read out
+the txt table in the flag
+database.
+
+Enjoy :>
 
 http://web.chal.csaw.io:3306/
