@@ -42,7 +42,7 @@ END$$
 
 
 DROP PROCEDURE IF EXISTS `verify_cookie`$$
-CREATE PROCEDURE `verify_cookie` (IN `signed_value` TEXT, OUT `cookie_value` TEXT, OUT `valid` BOOLEAN)
+CREATE PROCEDURE `verify_cookie` (IN `signed_value` TEXT, OUT `cookie_value` BLOB , OUT `valid` BOOLEAN)
 BEGIN
     DECLARE secret, signature TEXT;
     SET secret = (SELECT `value` FROM `config` WHERE `name` = 'signing_key');
@@ -58,7 +58,8 @@ DROP PROCEDURE IF EXISTS `parse_cookies`$$
 CREATE PROCEDURE `parse_cookies` (IN `cookies` TEXT)
 BEGIN
     -- Parse cookies in the form a=b; b=c; c=d;
-    DECLARE cur_cookies, cookie, cookie_name, cookie_value_and_sig, cookie_value TEXT;
+    DECLARE cookie_value BLOB;
+    DECLARE cur_cookies, cookie, cookie_name, cookie_value_and_sig TEXT;
     DECLARE cookie_valid BOOLEAN;
 
     SET cur_cookies = cookies;
@@ -93,7 +94,7 @@ END$$
 
 
 DROP PROCEDURE IF EXISTS `get_cookie`$$
-CREATE PROCEDURE `get_cookie` (IN `i_name` TEXT, OUT `o_value` TEXT)
+CREATE PROCEDURE `get_cookie` (IN `i_name` TEXT, OUT `o_value` BLOB)
 BEGIN
     IF EXISTS(SELECT 1 FROM `cookies` WHERE `name` = `i_name`) THEN
         SET `o_value` = (SELECT `value` FROM `cookies` WHERE `name` = `i_name` LIMIT 1);

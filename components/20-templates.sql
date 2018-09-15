@@ -6,7 +6,6 @@ DROP PROCEDURE IF EXISTS `populate_common_template_vars`$$
 CREATE PROCEDURE `populate_common_template_vars` ()
 BEGIN
     INSERT INTO `template_vars` SELECT CONCAT('config_', name), value FROM `config`;
-    INSERT INTO `template_vars` SELECT CONCAT('cookie_', name), value FROM `cookies`;
     INSERT INTO `template_vars` SELECT CONCAT('request_', name), value FROM `query_params`;
 END$$
 

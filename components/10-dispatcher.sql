@@ -24,7 +24,7 @@ BEGIN
     CALL parse_params(params);
     CALL parse_params(post_data);
 
-    CREATE TEMPORARY TABLE `cookies` (`name` VARCHAR(255) PRIMARY KEY, `value` TEXT);
+    CREATE TEMPORARY TABLE `cookies` (`name` VARCHAR(255) PRIMARY KEY, `value` BLOB);
     IF EXISTS(SELECT 1 FROM `headers` WHERE `name` = 'COOKIE') THEN
         SET req_cookies = (SELECT `value` FROM `headers` WHERE `name` = 'COOKIE');
         CALL parse_cookies(req_cookies);

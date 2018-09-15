@@ -15,7 +15,8 @@ END$$
 DROP PROCEDURE IF EXISTS `has_priv`$$
 CREATE PROCEDURE `has_priv` (IN `i_priv` TEXT, OUT `o_has_priv` BOOLEAN)
 BEGIN
-    DECLARE privs, hash, signing_key, cur_privs, cmp_priv TEXT;
+    DECLARE privs, cur_privs, cmp_priv BLOB;
+    DECLARE hash, signing_key TEXT;
 
     SET o_has_priv = FALSE;
 
