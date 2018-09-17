@@ -19,10 +19,10 @@ Solve:
 1. ggwp
 
 Formatting notes:
-    * Types
-        * Routes should be VARCHAR(255)
-        * header, cookie, template, etc. keys should be VARCHAR(255)
-        * header, cookie, template, etc. values should be TEXT
-        * response is TEXT
-    * Naming
-        * k/v pairs are always `name` `value` (to add to the confusion)
+* Types
+    * Routes should be VARCHAR(255)
+    * header, cookie, template, etc. keys should be VARCHAR(255)
+    * header, cookie, template, etc. values should be TEXT
+    * response is TEXT
+* Naming
+    * k/v pairs are always `name` `value` (to add to the confusion)
